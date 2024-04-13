@@ -4,7 +4,7 @@ import BottomSheet, {
   BottomSheetModal,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { Stack } from "expo-router";
+import { ANIMATION_CONFIGS } from "@gorhom/bottom-sheet/src/constants";
 
 import React, {
   PropsWithChildren,
@@ -14,9 +14,11 @@ import React, {
   useMemo,
 } from "react";
 import { useColorScheme } from "react-native";
+import { ReduceMotion, useReducedMotion } from "react-native-reanimated";
 type Ref = BottomSheetModal;
 const BottomDrawer = forwardRef<Ref, PropsWithChildren>(({ children }, ref) => {
   const colorScheme = useColorScheme();
+  const reducedMotion = useReducedMotion();
   const snapPoints = useMemo(() => ["80%"], []);
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -38,7 +40,7 @@ const BottomDrawer = forwardRef<Ref, PropsWithChildren>(({ children }, ref) => {
       backdropComponent={renderBackdrop}
       snapPoints={snapPoints}
     >
-      <BottomSheetView className="px-6 gap-4">{children}</BottomSheetView>
+      <BottomSheetView className="px-4 gap-4">{children}</BottomSheetView>
     </BottomSheetModal>
   );
 });

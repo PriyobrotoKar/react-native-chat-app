@@ -6,27 +6,25 @@ import BottomDrawer from "./BottomDrawer";
 import Text from "./Text";
 import { supabase } from "@/lib/supabase";
 import { User } from "@supabase/supabase-js";
-import { Image, View } from "react-native";
+import { Image, Pressable, TouchableOpacity, View } from "react-native";
 import { Database, Tables } from "@/lib/database.types";
 import { useAuth } from "@/providers/AuthProvider";
+import { router } from "expo-router";
+import useSupabaseQuery from "@/hooks/useSupabaseQuery";
 
 const NewChat = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const [users, setUsers] = useState<Tables<"profiles">[]>([]);
   const { session } = useAuth();
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select()
-        .neq("fullname", session?.user.user_metadata.name);
-      console.log(data);
-      if (!data) {
-        return;
-      }
-      setUsers(data);
-    })();
-  }, []);
+  const { data: users } = useSupabaseQuery(
+    supabase
+      .from("profiles")
+      .select()
+      .neq("fullname", session?.user.user_metadata.name)
+  );
+
+  if (!users) {
+    return;
+  }
 
   return (
     <>
@@ -37,7 +35,14 @@ const NewChat = () => {
         <View>
           {users.map((user) => {
             return (
-              <View key={user.id} className="flex-row gap-4 items-center">
+              <Pressable
+                key={user.id}
+                onPress={() => {
+                  bottomSheetRef.current?.dismiss();
+                  router.push(`/chat/${user.id}`);
+                }}
+                className="flex-row gap-4 items-center active:bg-neutral-100 dark:active:bg-neutral-800 p-2"
+              >
                 {user.profile_pic && (
                   <Image
                     source={{ uri: user.profile_pic }}
@@ -51,7 +56,7 @@ const NewChat = () => {
                   <Text className="text-xl font-medium">{user.fullname}</Text>
                   <Text className=" ">{user.email}</Text>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>

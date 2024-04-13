@@ -26,8 +26,6 @@ const SignIn = () => {
         },
       },
     });
-
-    console.log(data, error);
   }
 
   if (loading) {

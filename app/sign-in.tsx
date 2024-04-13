@@ -21,8 +21,6 @@ const SignIn = () => {
       email,
       password,
     });
-
-    console.log(data, error);
   }
 
   if (loading) {

@@ -70,7 +70,6 @@ function RootLayoutNav() {
                   backgroundColor: colorScheme === "dark" ? "black" : "white",
                 },
                 headerShadowVisible: false,
-                presentation: "transparentModal",
               }}
             >
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

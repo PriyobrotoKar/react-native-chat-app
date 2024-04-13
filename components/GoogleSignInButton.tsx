@@ -8,6 +8,8 @@ const GoogleSignInButton = () => {
     scopes: [],
     webClientId:
       "502107474829-rg8neo052ntd7b7a44ca6se885rnb3qm.apps.googleusercontent.com",
+    iosClientId:
+      "502107474829-erhtajlcg30b4qbrl3kqslj8cudptoii.apps.googleusercontent.com",
   });
 
   const handleGoogleSignIn = async () => {
@@ -19,7 +21,6 @@ const GoogleSignInButton = () => {
           provider: "google",
           token: userInfo.idToken,
         });
-        console.log(error, data);
       } else {
         throw new Error("no ID token present!");
       }
