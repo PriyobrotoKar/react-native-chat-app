@@ -2,12 +2,26 @@ import { TextInput, View } from "react-native";
 import React, { useState } from "react";
 import Icon from "./Icon";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/providers/AuthProvider";
 
-const MessageInput = () => {
+const MessageInput = ({ userId }: { userId: string }) => {
+  const { session } = useAuth();
   const [input, setInput] = useState("");
 
   const handleMessageSubmit = async () => {
     console.log("Message Submitted", input);
+    if (!session) {
+      return;
+    }
+
+    await supabase.from("messages").insert({
+      message: input,
+      sent_by: session.user.id,
+      sent_to: userId,
+    });
+
+    setInput("");
   };
 
   return (

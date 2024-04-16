@@ -5,27 +5,21 @@ import Text from "./Text";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
 import { supabase } from "@/lib/supabase";
 import Icon from "./Icon";
+import { ChatPageParams } from "@/app/chat/[id]";
 
-const ChatHeader = ({ id }: { id: string }) => {
-  const { data } = useSupabaseQuery(
-    supabase.from("profiles").select().eq("id", id).single()
-  );
-
-  if (!data) {
-    return;
-  }
+const ChatHeader = ({ params }: { params: Omit<ChatPageParams, "id"> }) => {
   return (
     <View className=" flex-1">
       <View className=" items-center gap-4 flex-row">
         <Image
-          source={{ uri: data.profile_pic || "" }}
+          source={{ uri: params.profile_pic || "" }}
           alt="Profile"
           width={45}
           height={45}
           className="rounded-full"
         />
         <View>
-          <Text className="text-xl font-medium">{data.fullname}</Text>
+          <Text className="text-xl font-medium">{params.fullname}</Text>
           <Text>See more info</Text>
         </View>
       </View>

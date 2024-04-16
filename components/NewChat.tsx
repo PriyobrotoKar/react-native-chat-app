@@ -39,7 +39,13 @@ const NewChat = () => {
                 key={user.id}
                 onPress={() => {
                   bottomSheetRef.current?.dismiss();
-                  router.push(`/chat/${user.id}`);
+                  router.push({
+                    pathname: `/chat/${user.id}`,
+                    params: {
+                      fullname: user.fullname!,
+                      profile_pic: user.profile_pic!,
+                    },
+                  });
                 }}
                 className="flex-row gap-4 items-center active:bg-neutral-100 dark:active:bg-neutral-800 p-2"
               >

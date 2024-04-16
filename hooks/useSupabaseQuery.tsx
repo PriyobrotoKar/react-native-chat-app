@@ -14,7 +14,7 @@ const useSupabaseQuery = <T,>(query: T) => {
     })();
   }, []);
 
-  return { data };
+  return { data, setData };
 };
 
 export default useSupabaseQuery;
