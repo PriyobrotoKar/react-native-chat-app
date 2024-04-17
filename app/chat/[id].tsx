@@ -1,5 +1,5 @@
-import { KeyboardAvoidingView, View } from "react-native";
-import React, { Fragment, useLayoutEffect, useState } from "react";
+import { ActivityIndicator, KeyboardAvoidingView, View } from "react-native";
+import React, { Fragment, useEffect, useLayoutEffect, useState } from "react";
 import { Stack, useLocalSearchParams } from "expo-router";
 import ChatHeader from "@/components/ChatHeader";
 import Text from "@/components/Text";
@@ -11,17 +11,19 @@ import { Tables } from "@/lib/database.types";
 import { twMerge } from "tailwind-merge";
 import clsx from "clsx";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
+import Loader from "@/components/Loader";
 
 let date: string | null = null;
 
 const DateHeader = ({ message }: { message: Tables<"messages"> }) => {
+  const dateFormatOptions: Intl.DateTimeFormatOptions = {
+    day: "2-digit",
+    weekday: "short",
+    month: "short",
+  };
   const messageCreatedAt = new Date(message.created_at).toLocaleDateString(
     "en-IN",
-    {
-      day: "2-digit",
-      weekday: "short",
-      month: "short",
-    }
+    dateFormatOptions
   );
 
   if (date === messageCreatedAt) {
@@ -29,9 +31,27 @@ const DateHeader = ({ message }: { message: Tables<"messages"> }) => {
   }
   date = messageCreatedAt;
 
+  const today = new Date().toLocaleDateString("en-IN", dateFormatOptions);
+  const yesterday = new Date(
+    new Date().setDate(new Date().getDate() - 1)
+  ).toLocaleDateString("en-IN", dateFormatOptions);
+
+  let finalDate = date;
+  if (date === today) {
+    finalDate = "Today";
+  } else if (date === yesterday) {
+    finalDate = "Yesterday";
+  }
+
+  useEffect(() => {
+    return () => {
+      date = null;
+    };
+  }, []);
+
   return (
     <View className="self-center  my-4 rounded-xl">
-      <Text>{date}</Text>
+      <Text>{finalDate}</Text>
     </View>
   );
 };
@@ -50,7 +70,7 @@ const ChatPage = () => {
     return;
   }
 
-  const { data: messages, setData } = useSupabaseQuery(
+  const { data: messages, setData: setMessages } = useSupabaseQuery(
     supabase
       .from("messages")
       .select()
@@ -59,7 +79,17 @@ const ChatPage = () => {
   );
 
   if (!messages) {
-    return;
+    return (
+      <>
+        <Stack.Screen
+          options={{
+            headerBackTitleVisible: false,
+            headerTitle: () => <ChatHeader params={params} />,
+          }}
+        />
+        <Loader />
+      </>
+    );
   }
 
   return (
@@ -118,7 +148,11 @@ const ChatPage = () => {
             );
           })}
         </View>
-        <MessageInput userId={id} />
+        <MessageInput
+          userId={id}
+          messages={messages}
+          setMessages={setMessages}
+        />
       </KeyboardAvoidingView>
       <SafeAreaView edges={["bottom"]} />
     </>

@@ -11,6 +11,7 @@ import { Database, Tables } from "@/lib/database.types";
 import { useAuth } from "@/providers/AuthProvider";
 import { router } from "expo-router";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
+import ChatItem from "./ChatItem";
 
 const NewChat = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
@@ -35,7 +36,7 @@ const NewChat = () => {
         <View>
           {users.map((user) => {
             return (
-              <Pressable
+              <ChatItem
                 key={user.id}
                 onPress={() => {
                   bottomSheetRef.current?.dismiss();
@@ -47,22 +48,8 @@ const NewChat = () => {
                     },
                   });
                 }}
-                className="flex-row gap-4 items-center active:bg-neutral-100 dark:active:bg-neutral-800 p-2"
-              >
-                {user.profile_pic && (
-                  <Image
-                    source={{ uri: user.profile_pic }}
-                    alt="profile"
-                    width={48}
-                    height={48}
-                    className="rounded-full"
-                  />
-                )}
-                <View>
-                  <Text className="text-xl font-medium">{user.fullname}</Text>
-                  <Text className=" ">{user.email}</Text>
-                </View>
-              </Pressable>
+                user={user}
+              />
             );
           })}
         </View>

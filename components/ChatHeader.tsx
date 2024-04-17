@@ -11,13 +11,19 @@ const ChatHeader = ({ params }: { params: Omit<ChatPageParams, "id"> }) => {
   return (
     <View className=" flex-1">
       <View className=" items-center gap-4 flex-row">
-        <Image
-          source={{ uri: params.profile_pic || "" }}
-          alt="Profile"
-          width={45}
-          height={45}
-          className="rounded-full"
-        />
+        {params.profile_pic ? (
+          <Image
+            source={{ uri: params.profile_pic }}
+            alt="profile"
+            width={48}
+            height={48}
+            className="rounded-full"
+          />
+        ) : (
+          <View className="dark:bg-neutral-700 size-14 items-center justify-center rounded-full">
+            <Icon name="person" size={24} />
+          </View>
+        )}
         <View>
           <Text className="text-xl font-medium">{params.fullname}</Text>
           <Text>See more info</Text>

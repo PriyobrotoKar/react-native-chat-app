@@ -1,11 +1,20 @@
 import { TextInput, View } from "react-native";
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import Icon from "./Icon";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
+import { Tables } from "@/lib/database.types";
 
-const MessageInput = ({ userId }: { userId: string }) => {
+const MessageInput = ({
+  userId,
+  messages,
+  setMessages,
+}: {
+  userId: string;
+  messages: Tables<"messages">[];
+  setMessages: Dispatch<SetStateAction<Tables<"messages">[] | null>>;
+}) => {
   const { session } = useAuth();
   const [input, setInput] = useState("");
 
@@ -15,13 +24,28 @@ const MessageInput = ({ userId }: { userId: string }) => {
       return;
     }
 
-    await supabase.from("messages").insert({
-      message: input,
-      sent_by: session.user.id,
-      sent_to: userId,
-    });
+    const { data, error } = await supabase
+      .from("messages")
+      .insert({
+        message: input,
+        sent_by: session.user.id,
+        sent_to: userId,
+      })
+      .select();
 
+    setMessages([...messages, data![0]]);
     setInput("");
+    console.log(data![0].id);
+
+    if (!messages.length) {
+      console.log("Create connection");
+      await supabase.from("connections").insert({
+        connected_to: userId,
+        connected_by: session.user.id,
+        status: "PENDING",
+        last_message: data![0].id,
+      });
+    }
   };
 
   return (
