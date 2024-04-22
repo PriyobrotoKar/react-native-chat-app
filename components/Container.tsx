@@ -10,7 +10,7 @@ const Container = ({
   return (
     <View
       className={twMerge(
-        "w-full h-full px-6 bg-white dark:bg-black",
+        "w-full h-full px-4 bg-white dark:bg-black",
         className
       )}
     >

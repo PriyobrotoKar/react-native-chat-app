@@ -7,7 +7,7 @@ import Text from "./Text";
 type ButtonProps = TouchableOpacityProps & {
   children: ReactNode;
   icon?: ReactNode;
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
 };
 
 const Button = ({ children, variant, icon, ...props }: ButtonProps) => {
@@ -38,6 +38,7 @@ const buttonVariants = cva(
         primary: "bg-yellow-400 dark:bg-yellow-500",
         secondary: "border border-neutral-400",
         ghost: "",
+        danger: "border border-red-500 bg-red-500/20",
       },
     },
     defaultVariants: {

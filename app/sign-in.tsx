@@ -6,7 +6,7 @@ import Navigate from "@/components/Navigate";
 import Text from "@/components/Text";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
-import { Redirect } from "expo-router";
+import { Redirect, Stack } from "expo-router";
 import React, { useState } from "react";
 import { TextInput, View } from "react-native";
 
@@ -32,6 +32,7 @@ const SignIn = () => {
   }
   return (
     <Container className="py-6 gap-8 items-center">
+      <Stack.Screen options={{ headerBackTitleVisible: false }} />
       <View className="gap-2 items-center">
         <Text className="text-4xl font-medium">Let's join with us</Text>
         <Text className="w-72 text-center text-neutral-600 dark:text-neutral-300">

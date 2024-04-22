@@ -3,34 +3,36 @@ import React from "react";
 import { Tables } from "@/lib/database.types";
 import Text from "./Text";
 import Icon from "./Icon";
+import { router } from "expo-router";
+import Avatar from "./Avatar";
 
 const ChatItem = ({
   user,
   lastMessage,
+  connectionStatus,
   ...props
 }: {
   user: Tables<"profiles">;
+  connectionStatus: Tables<"connections">["status"];
   lastMessage?: Tables<"messages">;
 } & PressableProps) => {
   return (
     <Pressable
+      onPress={() => {
+        router.push({
+          pathname: `/chat/${user.id}`,
+          params: {
+            fullname: user.fullname!,
+            profile_pic: user.profile_pic!,
+            connectionStatus: connectionStatus!,
+          },
+        });
+      }}
       {...props}
       className="flex-row justify-between items-center active:bg-neutral-100 dark:active:bg-neutral-800 p-2 rounded-xl"
     >
-      <View className="flex-row gap-4 items-center">
-        {user.profile_pic ? (
-          <Image
-            source={{ uri: user.profile_pic }}
-            alt="profile"
-            width={48}
-            height={48}
-            className="rounded-full"
-          />
-        ) : (
-          <View className="dark:bg-neutral-700 size-14 items-center justify-center rounded-full">
-            <Icon name="person" size={24} />
-          </View>
-        )}
+      <View className="flex-row gap-4 items-center h-14">
+        <Avatar profile_pic={user.profile_pic} size={24} />
         <View>
           <Text className="text-xl font-medium">{user.fullname}</Text>
           <Text className=" ">{lastMessage?.message || user.email}</Text>

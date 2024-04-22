@@ -11,6 +11,7 @@ import "./global.css";
 import { BottomSheetProvider } from "@gorhom/bottom-sheet/lib/typescript/contexts";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { verifyInstallation } from "nativewind";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -53,9 +54,10 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+
   return (
     // <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-    <View className="bg-white dark:bg-black w-full h-full flex-1">
+    <View className=" bg-white dark:bg-black w-full h-full flex-1">
       <AuthProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <BottomSheetModalProvider>

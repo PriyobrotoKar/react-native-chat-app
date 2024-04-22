@@ -1,5 +1,6 @@
 import ChatItem from "@/components/ChatItem";
 import Container from "@/components/Container";
+
 import Header from "@/components/Header";
 import Text from "@/components/Text";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
@@ -42,15 +43,6 @@ const Index = () => {
                 : chat.messages.from;
             return (
               <ChatItem
-                onPress={() => {
-                  router.push({
-                    pathname: `/chat/${user.id}`,
-                    params: {
-                      fullname: user.fullname!,
-                      profile_pic: user.profile_pic!,
-                    },
-                  });
-                }}
                 user={user}
                 key={chat.id}
                 lastMessage={chat.messages!}
