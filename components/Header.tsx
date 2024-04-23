@@ -13,7 +13,11 @@ import { router } from "expo-router";
 const Header = () => {
   const { session } = useAuth();
   const { data } = useSupabaseQuery(
-    supabase.from("connections").select().eq("connected_to", session!.user.id)
+    supabase
+      .from("connections")
+      .select()
+      .eq("connected_to", session!.user.id)
+      .eq("status", "PENDING")
   );
   if (!data) {
     return;

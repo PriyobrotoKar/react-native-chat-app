@@ -45,6 +45,7 @@ const Index = () => {
               <ChatItem
                 user={user}
                 key={chat.id}
+                connectionStatus={"ACCEPTED"}
                 lastMessage={chat.messages!}
               />
             );

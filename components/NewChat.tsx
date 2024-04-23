@@ -16,11 +16,17 @@ import ChatItem from "./ChatItem";
 const NewChat = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const { session } = useAuth();
+  if (!session) {
+    return;
+  }
   const { data: users } = useSupabaseQuery(
     supabase
       .from("profiles")
-      .select()
-      .neq("fullname", session?.user.user_metadata.name)
+      .select(
+        "*, requestedBy:connections!public_connections_connected_by_fkey(status)"
+      )
+      .eq("requestedBy.connected_to", session.user.id)
+      .neq("fullname", session.user.user_metadata.name)
   );
 
   if (!users) {
@@ -38,6 +44,7 @@ const NewChat = () => {
             return (
               <ChatItem
                 key={user.id}
+                connectionStatus={user.requestedBy[0].status!}
                 onPress={() => {
                   bottomSheetRef.current?.dismiss();
                   router.push({
@@ -45,6 +52,7 @@ const NewChat = () => {
                     params: {
                       fullname: user.fullname!,
                       profile_pic: user.profile_pic!,
+                      connectionStatus: user.requestedBy[0].status!,
                     },
                   });
                 }}

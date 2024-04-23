@@ -1,6 +1,6 @@
 import { ActivityIndicator, KeyboardAvoidingView, View } from "react-native";
 import React, { Fragment, useEffect, useLayoutEffect, useState } from "react";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 import ChatHeader from "@/components/ChatHeader";
 import Text from "@/components/Text";
 import MessageInput from "@/components/MessageInput";
@@ -81,6 +81,20 @@ const ChatPage = () => {
       .or(`sent_to.eq.${id},sent_to.eq.${session.user.id}`)
   );
 
+  const handleAcceptRequest = async () => {
+    const { error } = await supabase
+      .from("connections")
+      .update({
+        status: "ACCEPTED",
+      })
+      .eq("connected_by", id)
+      .eq("connected_to", session.user.id);
+
+    if (!error) {
+      router.setParams({ id, ...params, connectionStatus: "ACCEPTED" });
+    }
+  };
+
   if (!messages) {
     return (
       <>
@@ -153,7 +167,7 @@ const ChatPage = () => {
           })}
         </Container>
         {params.connectionStatus === "PENDING" ? (
-          <Container className="h-auto py-6 gap-2 border-t border-neutral-200 dark:border-neutral-700 ">
+          <Container className="h-auto py-6 gap-6 border-t border-neutral-200 dark:border-neutral-700 ">
             <Text className="text-center text-xl mx-auto w-[18rem]">
               Accept message request from{" "}
               <Text className="font-bold">{params.fullname}</Text>?
@@ -165,7 +179,11 @@ const ChatPage = () => {
               <Button className="flex-1 p-2 rounded-xl" variant="danger">
                 Delete
               </Button>
-              <Button className="flex-1 p-2 rounded-xl" variant="primary">
+              <Button
+                onPress={handleAcceptRequest}
+                className="flex-1 p-2 rounded-xl"
+                variant="primary"
+              >
                 Accept
               </Button>
             </View>

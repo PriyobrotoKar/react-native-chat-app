@@ -17,6 +17,7 @@ const requests = () => {
         "*,messages(*,from:profiles!public_messages_sent_by_fkey(*),to:profiles!public_messages_sent_to_fkey(*))"
       )
       .eq("connected_to", session!.user.id)
+      .eq("status", "PENDING")
   );
 
   if (!data) {
@@ -50,7 +51,7 @@ const requests = () => {
             user={chat.messages.from}
             key={chat.id}
             lastMessage={chat.messages}
-            connectionStatus={chat.status}
+            connectionStatus={chat.status!}
           />
         );
       })}

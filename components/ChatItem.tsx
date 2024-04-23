@@ -13,7 +13,7 @@ const ChatItem = ({
   ...props
 }: {
   user: Tables<"profiles">;
-  connectionStatus: Tables<"connections">["status"];
+  connectionStatus?: Exclude<Tables<"connections">["status"], null>;
   lastMessage?: Tables<"messages">;
 } & PressableProps) => {
   return (
