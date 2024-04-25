@@ -2,6 +2,7 @@ import ChatItem from "@/components/ChatItem";
 import Container from "@/components/Container";
 
 import Header from "@/components/Header";
+import Loader from "@/components/Loader";
 import Text from "@/components/Text";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
 import { supabase } from "@/lib/supabase";
@@ -11,13 +12,13 @@ import React from "react";
 import { View } from "react-native";
 
 const Index = () => {
-  const { session, loading } = useAuth();
+  const { session } = useAuth();
 
   if (!session) {
     return;
   }
 
-  const { data } = useSupabaseQuery(
+  const { data, loading } = useSupabaseQuery(
     supabase
       .from("connections")
       .select(
@@ -27,6 +28,10 @@ const Index = () => {
         `and(connected_to.eq.${session.user.id},status.eq.ACCEPTED),and(connected_by.eq.${session.user.id},status.in.(ACCEPTED,BLOCKED,PENDING))`
       )
   );
+
+  if (loading && !data) {
+    return <Loader />;
+  }
 
   return (
     <>

@@ -13,7 +13,7 @@ const MessageInput = ({
 }: {
   userId: string;
   messages: Tables<"messages">[];
-  setMessages: Dispatch<SetStateAction<Tables<"messages">[] | null>>;
+  setMessages: Dispatch<SetStateAction<Tables<"messages">[]>>;
 }) => {
   const { session } = useAuth();
   const [input, setInput] = useState("");
@@ -33,7 +33,7 @@ const MessageInput = ({
       })
       .select();
 
-    setMessages([...messages, data![0]]);
+    setMessages((prev) => [...prev, data![0]]);
     setInput("");
     console.log(data![0].id);
 
@@ -49,7 +49,7 @@ const MessageInput = ({
   };
 
   return (
-    <View className="px-4  flex-row gap-4 items-center">
+    <View className="p-4 flex-row gap-4 items-center">
       <TextInput
         className="bg-neutral-200 dark:bg-neutral-800 dark:text-white text-black flex-1 placeholder:text-neutral-400 p-4 rounded-full"
         placeholder="Type your message..."

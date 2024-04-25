@@ -10,11 +10,13 @@ import Avatar from "./Avatar";
 
 const ChatHeader = ({ params }: { params: Omit<ChatPageParams, "id"> }) => {
   return (
-    <View className="items-center gap-4 flex-row flex-1">
-      <Avatar size={22} profile_pic={params.profile_pic} />
-      <View>
-        <Text className="text-xl font-medium">{params.fullname}</Text>
-        <Text>See more info</Text>
+    <View className="items-center gap-4   flex-row flex-1">
+      <Avatar size={18} profile_pic={params.profile_pic} />
+      <View className="">
+        <Text className="text-xl leading-tight font-medium">
+          {params.fullname}
+        </Text>
+        <Text className="text-sm">See more info</Text>
       </View>
     </View>
   );

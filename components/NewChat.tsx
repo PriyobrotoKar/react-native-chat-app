@@ -26,7 +26,8 @@ const NewChat = () => {
         "*, requestedBy:connections!public_connections_connected_by_fkey(status)"
       )
       .eq("requestedBy.connected_to", session.user.id)
-      .neq("fullname", session.user.user_metadata.name)
+      .neq("fullname", session.user.user_metadata.name),
+    true
   );
 
   if (!users) {
@@ -44,7 +45,11 @@ const NewChat = () => {
             return (
               <ChatItem
                 key={user.id}
-                connectionStatus={user.requestedBy[0].status!}
+                connectionStatus={
+                  user.requestedBy.length
+                    ? user.requestedBy[0].status!
+                    : "ACCEPTED"
+                }
                 onPress={() => {
                   bottomSheetRef.current?.dismiss();
                   router.push({
@@ -52,7 +57,7 @@ const NewChat = () => {
                     params: {
                       fullname: user.fullname!,
                       profile_pic: user.profile_pic!,
-                      connectionStatus: user.requestedBy[0].status!,
+                      connectionStatus: user.requestedBy[0].status || "",
                     },
                   });
                 }}

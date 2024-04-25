@@ -1,5 +1,20 @@
-import { ActivityIndicator, KeyboardAvoidingView, View } from "react-native";
-import React, { Fragment, useEffect, useLayoutEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+} from "react-native";
+import React, {
+  Fragment,
+  MutableRefObject,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { Stack, router, useLocalSearchParams } from "expo-router";
 import ChatHeader from "@/components/ChatHeader";
 import Text from "@/components/Text";
@@ -15,9 +30,13 @@ import Loader from "@/components/Loader";
 import Container from "@/components/Container";
 import Button from "@/components/Button";
 
-let date: string | null = null;
-
-const DateHeader = ({ message }: { message: Tables<"messages"> }) => {
+const DateHeader = ({
+  message,
+  dates,
+}: {
+  message: Tables<"messages">;
+  dates: Set<string>;
+}) => {
   const dateFormatOptions: Intl.DateTimeFormatOptions = {
     day: "2-digit",
     weekday: "short",
@@ -28,28 +47,23 @@ const DateHeader = ({ message }: { message: Tables<"messages"> }) => {
     dateFormatOptions
   );
 
-  if (date === messageCreatedAt) {
+  if (dates.has(messageCreatedAt)) {
     return;
   }
-  date = messageCreatedAt;
+
+  dates.add(messageCreatedAt);
 
   const today = new Date().toLocaleDateString("en-IN", dateFormatOptions);
   const yesterday = new Date(
     new Date().setDate(new Date().getDate() - 1)
   ).toLocaleDateString("en-IN", dateFormatOptions);
 
-  let finalDate = date;
-  if (date === today) {
+  let finalDate = messageCreatedAt;
+  if (messageCreatedAt === today) {
     finalDate = "Today";
-  } else if (date === yesterday) {
+  } else if (messageCreatedAt === yesterday) {
     finalDate = "Yesterday";
   }
-
-  useEffect(() => {
-    return () => {
-      date = null;
-    };
-  }, []);
 
   return (
     <View className="self-center  my-4 rounded-xl">
@@ -67,19 +81,70 @@ export type ChatPageParams = {
 
 const ChatPage = () => {
   const { id, ...params } = useLocalSearchParams<ChatPageParams>();
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const dateRef = useRef<string | null>(null);
+  const date: string | null = null;
+  const [messages, setMessages] = useState<Tables<"messages">[]>([]);
+  const dates = new Set<string>();
 
   const { session } = useAuth();
   if (!session) {
     return;
   }
 
-  const { data: messages, setData: setMessages } = useSupabaseQuery(
-    supabase
-      .from("messages")
-      .select()
-      .or(`sent_by.eq.${id},sent_by.eq.${session.user.id}`)
-      .or(`sent_to.eq.${id},sent_to.eq.${session.user.id}`)
-  );
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select()
+        .or(`sent_by.eq.${id},sent_by.eq.${session.user.id}`)
+        .or(`sent_to.eq.${id},sent_to.eq.${session.user.id}`);
+
+      if (!data) {
+        return;
+      }
+
+      supabase
+        .channel(`${id}_${session.user.id}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages" },
+          (payload: Record<string, any>) => {
+            if (!messages.length) {
+              setMessages([...data, payload.new]);
+            } else if (payload.new.sent_by !== session.user.id) {
+              setMessages((prev) => [...prev, payload.new]);
+            }
+          }
+        )
+        .subscribe();
+
+      setMessages(data);
+    })();
+
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      scrollToEnd
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      supabase.channel(`${id}_${session.user.id}`).unsubscribe();
+      dateRef.current = null;
+    };
+  }, []);
+
+  const scrollToEnd = useCallback(() => {
+    // if (scrollViewRef.current && messages && messages.length)
+    setTimeout(
+      () => scrollViewRef.current?.scrollToEnd({ animated: true }),
+      50
+    );
+  }, [scrollViewRef]);
+
+  useEffect(() => {
+    scrollToEnd();
+  }, [messages, scrollViewRef]);
 
   const handleAcceptRequest = async () => {
     const { error } = await supabase
@@ -119,16 +184,26 @@ const ChatPage = () => {
       />
       <KeyboardAvoidingView
         className="flex-1"
-        behavior="padding"
-        keyboardVerticalOffset={120}
+        behavior={"padding"}
+        keyboardVerticalOffset={100}
       >
-        <Container className="flex-1 py-4 gap-2">
+        <ScrollView
+          ref={scrollViewRef}
+          className="flex flex-col py-4 gap-2"
+          // onLayout={scrollToEnd}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            rowGap: 8,
+            paddingHorizontal: 10,
+            paddingBottom: 20,
+          }}
+        >
           {messages.map((message) => {
             const isSentByCurrentUser = message.sent_by === session?.user.id;
 
             return (
               <Fragment key={message.id}>
-                <DateHeader message={message} />
+                <DateHeader message={message} dates={dates} />
                 <View
                   className={twMerge(
                     clsx(
@@ -165,7 +240,7 @@ const ChatPage = () => {
               </Fragment>
             );
           })}
-        </Container>
+        </ScrollView>
         {params.connectionStatus === "PENDING" ? (
           <Container className="h-auto py-6 gap-6 border-t border-neutral-200 dark:border-neutral-700 ">
             <Text className="text-center text-xl mx-auto w-[18rem]">
