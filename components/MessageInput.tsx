@@ -19,7 +19,6 @@ const MessageInput = ({
   const [input, setInput] = useState("");
 
   const handleMessageSubmit = async () => {
-    console.log("Message Submitted", input);
     if (!session) {
       return;
     }
@@ -35,7 +34,6 @@ const MessageInput = ({
 
     setMessages((prev) => [...prev, data![0]]);
     setInput("");
-    console.log(data![0].id);
 
     if (!messages.length) {
       console.log("Create connection");
@@ -45,6 +43,15 @@ const MessageInput = ({
         status: "PENDING",
         last_message: data![0].id,
       });
+    } else {
+      await supabase
+        .from("connections")
+        .update({
+          last_message: data![0].id,
+        })
+        .or(
+          `and(connected_by.eq.${session.user.id},connected_to.eq.${userId}),and(connected_to.eq.${session.user.id},connected_by.eq.${userId})`
+        );
     }
   };
 

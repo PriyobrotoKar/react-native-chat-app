@@ -110,11 +110,12 @@ const ChatPage = () => {
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "messages" },
           (payload: Record<string, any>) => {
-            if (!messages.length) {
-              setMessages([...data, payload.new]);
-            } else if (payload.new.sent_by !== session.user.id) {
+            if (!messages.length && payload.new.sent_by !== session.user.id) {
               setMessages((prev) => [...prev, payload.new]);
             }
+            // else if (payload.new.sent_by !== session.user.id) {
+            //   setMessages((prev) => [...prev, payload.new]);
+            // }
           }
         )
         .subscribe();
