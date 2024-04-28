@@ -5,10 +5,11 @@ import Header from "@/components/Header";
 import Loader from "@/components/Loader";
 import Text from "@/components/Text";
 import useSupabaseQuery from "@/hooks/useSupabaseQuery";
+import { Tables } from "@/lib/database.types";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/providers/AuthProvider";
 import { Tabs, router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 
 const Index = () => {
@@ -18,7 +19,7 @@ const Index = () => {
     return;
   }
 
-  const { data, loading } = useSupabaseQuery(
+  const { data, setData, loading } = useSupabaseQuery(
     supabase
       .from("connections")
       .select(
@@ -29,6 +30,52 @@ const Index = () => {
       )
   );
 
+  useEffect(() => {
+    if (!data) {
+      return;
+    }
+
+    supabase
+      .channel(session.user.id)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `sent_to=eq.${session.user.id}`,
+        },
+        (payload: Record<string, any>) => {
+          console.log(payload);
+          const updatedChats = data?.map((chat) => {
+            if (
+              (chat.connected_by === payload.new.sent_by &&
+                chat.connected_to === session.user.id) ||
+              (chat.connected_to === payload.new.sent_by &&
+                chat.connected_by === session.user.id)
+            ) {
+              return {
+                ...chat,
+                messages: {
+                  ...payload.new,
+                  to: chat.messages?.to,
+                  from: chat.messages?.from,
+                },
+              };
+            }
+            return chat;
+          });
+          console.log(updatedChats);
+          updatedChats && setData(updatedChats);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.channel(session.user.id).unsubscribe();
+    };
+  }, [data]);
+
   if (loading && !data) {
     return <Loader />;
   }
@@ -38,7 +85,7 @@ const Index = () => {
       <Tabs.Screen options={{ header: () => <Header /> }} />
       <Container>
         <View className="mt-2">
-          {data?.map((chat) => {
+          {data!.map((chat) => {
             if (!chat.messages || !chat.messages.from || !chat.messages.to) {
               return;
             }
